@@ -1,3 +1,4 @@
+
 # 🌎 Calidad del Aire en Colombia — Dashboard Interactivo
 
 Dashboard interactivo construido con [Streamlit](https://streamlit.io) que comunica, a una
@@ -21,7 +22,7 @@ la Universidad Nacional Abierta y a Distancia (UNAD).
 
 ## 📸 Captura de pantalla
 
-*(Insertar aquí una captura de pantalla del dashboard funcionando)*
+![Dashboard funcionando](dashboard_screenshot.png)
 
 ## 🔍 Hallazgos principales
 
@@ -35,8 +36,8 @@ la Universidad Nacional Abierta y a Distancia (UNAD).
 
 1. Clona este repositorio:
    ```bash
-   git clone https://github.com/<tu-usuario>/<nombre-repo>.git
-   cd <nombre-repo>
+   git clone https://github.com/Jhonforero1997/tarea4-calidad-aire-colombia.git
+   cd tarea4-calidad-aire-colombia
    ```
 2. (Opcional pero recomendado) Crea un entorno virtual:
    ```bash
@@ -57,10 +58,11 @@ la Universidad Nacional Abierta y a Distancia (UNAD).
 
 ```
 .
-├── app.py              # Código principal del dashboard
-├── kekd-7v7h.csv        # Dataset: Calidad del Aire en Colombia (IDEAM / datos.gov.co)
-├── requirements.txt     # Librerías necesarias
-└── README.md            # Este documento
+├── app.py                    # Código principal del dashboard
+├── kekd-7v7h.csv             # Dataset: Calidad del Aire en Colombia (IDEAM / datos.gov.co)
+├── requirements.txt          # Librerías necesarias
+├── dashboard_screenshot.png  # Captura de pantalla del dashboard funcionando
+└── README.md                 # Este documento
 ```
 
 ## 📚 Fuente de los datos
@@ -73,4 +75,4 @@ datos]. https://www.datos.gov.co/Ambiente-y-Desarrollo-Sostenible/Calidad-del-Ai
 **Jhon Ivan Forero Forero**
 Grupo 31 — Curso: Programación para el análisis de datos (203008069)
 Universidad Nacional Abierta y a Distancia (UNAD)
-Noviembre de 2026
+Diciembre 06 de 2026
