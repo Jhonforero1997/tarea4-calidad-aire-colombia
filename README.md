@@ -17,7 +17,7 @@ la Universidad Nacional Abierta y a Distancia (UNAD).
 
 ## 🔗 Enlaces
 
-- **Dashboard publicado:** [URL de Streamlit] *(pendiente de completar tras el deployment)*
+- **Dashboard publicado:** [https://calidad-aire-colombia-forero.streamlit.app/](https://calidad-aire-colombia-forero.streamlit.app/)
 - **Repositorio:** este mismo repositorio de GitHub
 
 ## 📸 Captura de pantalla
