@@ -241,6 +241,26 @@ los niveles más altos de contaminación por partículas finas.
 """
     )
 
+    st.markdown("---")
+    st.subheader("Relación entre el nivel general de contaminación y los episodios más extremos")
+    st.markdown(
+        """
+En los datos analizados, las estaciones y años con un nivel promedio de
+contaminación más alto también tendieron a presentar los episodios de
+contaminación más severos (una relación fuerte, de 0.80 en una escala de 0 a
+1). Esto no prueba que uno cause el otro: ambos valores podrían estar
+respondiendo a un mismo factor de fondo, como la actividad industrial o el
+tráfico vehicular de la zona. Lo que sí sugiere este patrón es que vigilar de
+cerca el promedio de contaminación de una estación puede servir como una
+señal de alerta temprana de posibles picos graves en esa misma zona. Se
+recomienda usar esta relación como una guía de monitoreo prioritario, no como
+una garantía: antes de invertir recursos asumiendo que bajar el promedio
+reducirá automáticamente los picos extremos, conviene confirmar esta
+hipótesis con un análisis adicional enfocado en las estaciones de mayor
+riesgo.
+"""
+    )
+
 st.caption(
     "Dashboard construido con Streamlit a partir del EDA desarrollado en la "
     "Tarea 3 del curso Programación para el análisis de datos (203008069) - UNAD."
