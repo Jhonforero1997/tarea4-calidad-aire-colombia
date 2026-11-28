@@ -19,6 +19,12 @@ st.markdown(
     "Dashboard interactivo basado en el Análisis Exploratorio de Datos (EDA) del "
     "dataset **Calidad del Aire en Colombia (Promedio Anual)** — IDEAM / datos.gov.co."
 )
+st.caption(
+    "**PM10** son partículas inhalables de hasta 10 micrómetros de diámetro, y "
+    "**PM2.5** son partículas finas de hasta 2.5 micrómetros: al ser más pequeñas, "
+    "penetran más profundamente en las vías respiratorias y representan un mayor "
+    "riesgo para la salud."
+)
 
 # ---------------------------------------------------------------------------
 # Carga de datos (con caché para no releer el CSV en cada interacción)
@@ -91,32 +97,61 @@ tab_exploracion, tab_visualizaciones, tab_validacion, tab_hallazgos = st.tabs(
 # Sección: Exploración de datos
 # ---------------------------------------------------------------------------
 with tab_exploracion:
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Registros filtrados", f"{len(df_filtrado):,}")
-    col2.metric(
-        "Promedio de concentración",
-        f"{df_filtrado['promedio'].mean():.2f}" if len(df_filtrado) else "N/D",
+    st.metric("Registros filtrados", f"{len(df_filtrado):,}")
+
+    st.markdown("**Promedio y desviación estándar por contaminante**")
+    st.caption(
+        "Se muestran por separado porque cada contaminante puede tener una unidad "
+        "de medida distinta (por ejemplo µg/m³, °C o ppm); promediarlos juntos no "
+        "tendría sentido."
     )
-    col3.metric(
-        "Desviación estándar",
-        f"{df_filtrado['promedio'].std():.2f}" if len(df_filtrado) else "N/D",
-    )
+    if len(df_filtrado):
+        resumen_var = (
+            df_filtrado.groupby("variable")
+            .agg(
+                unidad=("unidades", "first"),
+                registros=("promedio", "count"),
+                promedio=("promedio", "mean"),
+                desviacion_estandar=("promedio", "std"),
+            )
+            .round(2)
+            .rename(
+                columns={
+                    "unidad": "Unidad",
+                    "registros": "Registros",
+                    "promedio": "Promedio",
+                    "desviacion_estandar": "Desviación estándar",
+                }
+            )
+        )
+        resumen_var.index.name = "Contaminante"
+        st.dataframe(resumen_var, use_container_width=True)
+    else:
+        st.info("No hay datos para los filtros seleccionados.")
 
     with st.expander("Ver tabla de datos filtrados"):
-        st.dataframe(
-            df_filtrado[
-                [
-                    "estaci_n",
-                    "nombre_del_departamento",
-                    "nombre_del_municipio",
-                    "variable",
-                    "a_o",
-                    "promedio",
-                    "tipo_de_estaci_n",
-                ]
-            ],
-            use_container_width=True,
+        tabla_filtrada = df_filtrado[
+            [
+                "estaci_n",
+                "nombre_del_departamento",
+                "nombre_del_municipio",
+                "variable",
+                "a_o",
+                "promedio",
+                "tipo_de_estaci_n",
+            ]
+        ].rename(
+            columns={
+                "estaci_n": "Estación",
+                "nombre_del_departamento": "Departamento",
+                "nombre_del_municipio": "Municipio",
+                "variable": "Contaminante",
+                "a_o": "Año",
+                "promedio": "Promedio",
+                "tipo_de_estaci_n": "Tipo de estación",
+            }
         )
+        st.dataframe(tabla_filtrada, use_container_width=True)
 
 # ---------------------------------------------------------------------------
 # Sección: Visualizaciones
@@ -142,11 +177,21 @@ with tab_visualizaciones:
     with graf_col2:
         st.subheader("Distribución por tipo de estación")
         if len(df_filtrado):
-            fig2, ax2 = plt.subplots(figsize=(6, 4))
-            sns.boxplot(data=df_filtrado, x="tipo_de_estaci_n", y="promedio", ax=ax2)
-            ax2.set_xlabel("Tipo de estación")
-            ax2.set_ylabel("Promedio")
-            ax2.set_title("Promedio por tipo de estación")
+            # Se muestra un panel por contaminante en vez de mezclarlos en un
+            # solo gráfico, porque cada uno puede tener una unidad distinta.
+            vars_presentes = sorted(df_filtrado["variable"].unique().tolist())
+            fig2, axes2 = plt.subplots(
+                1, len(vars_presentes), figsize=(6, 4), sharey=False, squeeze=False
+            )
+            for ax, var in zip(axes2[0], vars_presentes):
+                datos_var = df_filtrado[df_filtrado["variable"] == var]
+                unidad = datos_var["unidades"].iloc[0] if len(datos_var) else ""
+                sns.boxplot(data=datos_var, x="tipo_de_estaci_n", y="promedio", ax=ax)
+                ax.set_xlabel("Tipo de estación")
+                ax.set_ylabel(f"Promedio ({unidad})")
+                ax.set_title(var)
+            fig2.suptitle("Promedio por tipo de estación (un panel por contaminante)")
+            fig2.tight_layout()
             st.pyplot(fig2)
             plt.close(fig2)
         else:
@@ -165,11 +210,19 @@ with tab_visualizaciones:
     else:
         st.info("No hay datos para los filtros seleccionados.")
 
-    st.subheader("Proporción de estaciones por tipo (dataset completo, no se filtra)")
+    st.subheader(
+        "Proporción de estaciones de monitoreo únicas por tipo "
+        "(dataset completo, no se filtra)"
+    )
+    st.caption(
+        "Se cuenta cada estación de monitoreo una sola vez (no cada registro/medición), "
+        "para reflejar cuántas estaciones distintas son Fijas o Indicativas."
+    )
+    estaciones_unicas = df.drop_duplicates(subset=["estaci_n"])
     fig4, ax4 = plt.subplots(figsize=(5, 5))
-    df["tipo_de_estaci_n"].value_counts().plot.pie(autopct="%1.1f%%", ax=ax4)
+    estaciones_unicas["tipo_de_estaci_n"].value_counts().plot.pie(autopct="%1.1f%%", ax=ax4)
     ax4.set_ylabel("")
-    ax4.set_title("Fija vs. Indicativa")
+    ax4.set_title(f"Fija vs. Indicativa ({len(estaciones_unicas):,} estaciones únicas)")
     st.pyplot(fig4)
     plt.close(fig4)
 
@@ -190,16 +243,25 @@ distintos). El resultado obtenido en el análisis fue:
 
     stat_col1, stat_col2, stat_col3 = st.columns(3)
     stat_col1.metric("Diferencia detectada", "Sí, significativa")
-    stat_col2.metric("Probabilidad de que sea azar", "Prácticamente 0%")
+    stat_col2.metric("¿Pudo deberse al azar?", "Muy poco probable")
     stat_col3.metric("Magnitud del efecto", "Moderada")
+
+    st.caption(
+        "El valor p no mide \"la probabilidad de que la diferencia sea producto "
+        "del azar\": mide qué tan raro sería observar una diferencia como esta "
+        "(o mayor) si en realidad no existiera ninguna diferencia real entre los "
+        "promedios. En este caso, sería muy raro observar una diferencia como "
+        "esta o mayor si los promedios fueran en realidad iguales."
+    )
 
     st.success(
         "**En palabras simples:** las estaciones fijas registran, en promedio, "
         "niveles de PM2.5 más altos que las estaciones indicativas (17.1 µg/m³ "
         "frente a 14.5 µg/m³). La diferencia es estadísticamente consistente "
         "(no parece producto del azar), aunque su tamaño es moderado: el tipo "
-        "de estación influye en el nivel registrado, pero no es el único factor "
-        "que explica la contaminación del aire."
+        "de estación está asociado con el nivel registrado, pero no es el único "
+        "factor que explica la contaminación del aire, y esta prueba por sí sola "
+        "no permite afirmar que el tipo de estación sea la causa de esa diferencia."
     )
 
 # ---------------------------------------------------------------------------
@@ -222,14 +284,21 @@ más altos que las estaciones temporales ("Indicativas"), una diferencia que
 el análisis estadístico confirma que no se debe simplemente al azar.
 
 **¿Qué significa?**
-La mejora sostenida en los niveles de PM10 y PM2.5 sugiere que las medidas de
-control ambiental aplicadas en el país en la última década han tenido un
-impacto positivo real. Por otro lado, que las estaciones fijas —ubicadas de
-forma permanente, típicamente en zonas urbanas de mayor exposición como vías
-o zonas industriales— reporten niveles más altos, indica que la ubicación
-del monitoreo importa: una red de estaciones concentrada solo en zonas fijas
+La tendencia a la baja, por sí sola, no demuestra que las medidas de control
+ambiental aplicadas en el país hayan funcionado: el dato muestra una
+asociación en el tiempo, no una relación de causa y efecto comprobada, ya que
+otros factores (cambios en qué estaciones reportan cada año, condiciones
+económicas, etc.) también podrían influir. Es una hipótesis razonable que vale
+la pena seguir explorando, no una conclusión cerrada. De forma similar, la
+prueba estadística muestra que el tipo de estación está asociado con el nivel
+de PM2.5 registrado, pero no permite afirmar que el tipo de estación "cause"
+esa diferencia. Una posible explicación —consistente con que las estaciones
+fijas están ubicadas de forma permanente, típicamente en zonas urbanas de
+mayor exposición como vías o zonas industriales— es que la ubicación del
+monitoreo importe: una red de estaciones concentrada solo en zonas fijas
 podría estar sobreestimando (o, si se concentrara solo en zonas indicativas,
-subestimando) la exposición real de la población.
+subestimando) la exposición real de la población. Esto es un aspecto a
+explorar con más detalle, no un hecho ya confirmado por esta prueba.
 
 **¿Qué se recomendaría?**
 Se recomienda mantener y, de ser posible, ampliar la red de estaciones de
@@ -247,8 +316,11 @@ los niveles más altos de contaminación por partículas finas.
         """
 En los datos analizados, las estaciones y años con un nivel promedio de
 contaminación más alto también tendieron a presentar los episodios de
-contaminación más severos (una relación fuerte, de 0.80 en una escala de 0 a
-1). Esto no prueba que uno cause el otro: ambos valores podrían estar
+contaminación más severos: una correlación de 0.80, que indica una relación
+**positiva fuerte** (la correlación se mide en una escala de -1 a 1, donde 0
+significa que no hay relación, 1 es una relación positiva perfecta y -1 una
+relación negativa perfecta; 0.80 no equivale a "80 %"). Esto no prueba que uno
+cause el otro: ambos valores podrían estar
 respondiendo a un mismo factor de fondo, como la actividad industrial o el
 tráfico vehicular de la zona. Lo que sí sugiere este patrón es que vigilar de
 cerca el promedio de contaminación de una estación puede servir como una
