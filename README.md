@@ -1,4 +1,3 @@
-
 # 🌎 Calidad del Aire en Colombia — Dashboard Interactivo
 
 Dashboard interactivo construido con [Streamlit](https://streamlit.io) que comunica, a una
@@ -28,8 +27,8 @@ la Universidad Nacional Abierta y a Distancia (UNAD).
 
 - PM10 es el contaminante con más registros en el dataset, seguido de PM2.5.
 - Tanto PM10 como PM2.5 muestran una tendencia decreciente sostenida, especialmente marcada desde 2017.
-- El promedio de PM2.5 es significativamente más alto en estaciones de tipo Fija que en estaciones de tipo Indicativa (prueba t de Welch, p < 0.05; tamaño del efecto moderado, d de Cohen ≈ 0.38).
-- Cerca del 90% de las estaciones de monitoreo del dataset son de tipo Fija (permanentes) y el 10% restante son Indicativas (temporales).
+- El promedio de PM2.5 es significativamente más alto en estaciones de tipo Fija que en estaciones de tipo Indicativa (prueba t de Welch, p < 0.05; tamaño del efecto moderado, d de Cohen ≈ 0.38); esto indica una asociación, no necesariamente que el tipo de estación sea la causa de esa diferencia.
+- Del total de estaciones de monitoreo **únicas** del dataset (667), el 64.6% son de tipo Fija (permanentes, 431 estaciones) y el 35.4% son Indicativas (temporales, 236 estaciones).
 - La variabilidad entre estaciones es mayor en PM2.5 que en PM10, lo que sugiere una cobertura geográfica más heterogénea para ese contaminante.
 
 ## ⚙️ Instalación y ejecución local
@@ -75,4 +74,4 @@ datos]. https://www.datos.gov.co/Ambiente-y-Desarrollo-Sostenible/Calidad-del-Ai
 **Jhon Ivan Forero Forero**
 Grupo 31 — Curso: Programación para el análisis de datos (203008069)
 Universidad Nacional Abierta y a Distancia (UNAD)
-Diciembre 06 de 2026
+Noviembre de 2026
